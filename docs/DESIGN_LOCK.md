@@ -1,0 +1,58 @@
+# PRINTCOM COMING SOON — DESIGN LOCK V3
+
+**Status: validated on 2026-10-12. Supersedes every previous Precision White / Print & Material draft and the old handoff ZIP.**
+
+## Canonical visual reference
+
+- `public/design-reference/approved-blueprint-immersive.png`: latest approved blue landing-page screenshot, for visual comparison only.
+- `public/design-reference/blueprint-background-reference.png`: generated blueprint background reference, for visual comparison only. **Do not render this image as the background**; code it with CSS and SVG.
+- Cursor/Image Trail reference: https://reactbits.dev/animations/image-trail
+
+## Locked stack
+Next.js App Router + React + TypeScript (strict) + Tailwind CSS + npm, deployed to Vercel ONLY after owner approval. Prefer latest compatible stable versions when starting the implementation. No Webflow, no Canvas/WebGL needed for the blueprint.
+
+## Exact approved copy — preserve text
+- Header brand: `printcom.`
+- Header badge: `Site en préparation`
+- Eyebrow: `L’ART DE L’IMPRESSION COMMERCIALE`
+- H1: `La matière donne vie aux idées.`
+- Subheading: `Tout ce qui porte votre marque. Imprimé avec intention.`
+- Secondary: `Notre site est en préparation. Votre projet, lui, peut commencer dès maintenant.`
+- CTA visible label: `Demander un devis`
+- CTA exact href: `mailto:contact@printcom.ma` (mail app, not a web quote form). Do not alter.
+- Footer: `© 2026 Printcom` · `Bientôt en ligne` · `Impressions qui durent`
+
+## Art direction: BLUEPRINT IMMERSIVE
+
+A premium dark/cobalt-blue technical blueprint with editorial Apple-inspired typography and restrained interface.
+- Base blues: deep marine/cobalt gradient; very subtle lighting, no generic neon overload.
+- Fine square drafting grid, stronger structural grid. CSS gradients, responsive, no bitmap backgrounds.
+- Native inline SVG overlay: crosshair registration targets, circles, dashed construction arcs, measurement rules, light drafting lines, dashed A4 rectangle, hatch fill, cropped crosses and indicators.
+- Technical print-UI text: `CMJN` swatches in cyan/magenta/yellow/key, `DÉCOUPE`, `PLIAGE`, `FAÇONNAGE`, `IMPRESSION`, illustrative `A4 210 × 297 mm`, measurement ruler 0–300 mm. These are visual drafting annotations, NOT real specs of any pictured commercial product.
+- White typography, large H1, clear CTA white pill with dark ink. Keep negative space around left reading column.
+- Blueprint is CSS + SVG, e.g. `BlueprintBackground.tsx` with pointer-events none, aria-hidden true, separate from semantic content. SVG gradients and shapes should be resize-aware; avoid distorted labels.
+
+## Hero interactive visual — React Bits Image Trail
+
+The original visual depicts cards floating in a diagonal cursor path; actual interaction comes from `Image Trail`: https://reactbits.dev/animations/image-trail. Use official React Bits TS + Tailwind or CSS version, check currently documented dependencies and licensing, and keep as a client-only island. **Static screenshot tiles are reference art, not the animation implementation.**
+**Owner-controlled assets only**: the owner chooses the AVIF photos. Source folder: `public/media/image-trail/`; ordered list defined in `src/config/site-assets.ts` after initialization. Accept any nonzero number selected by the owner; no requirement to display five preselected generated PNGs. The approved mockup can show brochure, flyers, tote bag, X-banner and event signage as stylistic examples, **not mandated production assets**. Do not invent/download replacement images or silently use earlier PNG mockups. Until AVIF files are supplied, the client component stays disabled or displays a deliberate dev-only empty-state. The blueprint and copy must work without these assets. See `docs/ASSET_GUIDE.md`.
+
+The trail must not block CTA clicks or obscure the H1. When pointer/touch/reduced motion is unavailable, use a stable, beautiful composition of 2–3 products. Dynamically import interactive component only in client layer if beneficial. Do not saturate page with all images at rest. Never use mockup/reference pictures as content automatically.
+
+## Logo marquee
+
+Insert an infinite animated logo marquee BELOW the CTA, but above footer. Purpose: show Printcom has an active business. Only render real, **approved/authorized existing customer/partner logos** supplied later by the owner in `public/media/marquee/` as sanitized SVG files and registered in `src/config/site-assets.ts`; mock/fake client endorsements are forbidden. Until real logos arrive, build a component accepting `logos[]` and render nothing or a clear developer-only placeholder; DO NOT publish invented third-party logos, random icons, or fictional brand names as customer logos.
+Marquee must pause on hover/focus, support `prefers-reduced-motion` with static wrapped logo grid, and give appropriate accessible labels.
+
+## Layout
+
+At 1440px wide: header; centered vertically hero with left copy column ~55% and right/center interactive Image Trail zone ~45%; CTA clear; marquee below; short thin-line footer. On small laptop ensure content fits or scrolls naturally. At 390px: CTA and hero copy first, reduce drafting annotation count, Image Trail falls back to static or touch-safe; logo rail reduces without content loss. No horizontal scroll.
+
+## Strict scope and gates
+- Existing main application repo `printcom.ma` stays untouched and protected.
+- The Coming Soon repo is separate: `amineelba/printcom-coming-soon` unless user confirms a different remote.
+- No DNS changes, no Vercel production deployment, no site publication until explicit approval.
+- No invented business claims, customer logos, countdown or deadline.
+- Validate preview using desktop (1440x900), tablet (768x1024), mobile (390x844).
+- All copy must be real HTML text and CTA a genuine `mailto:` anchor.
+- Respect focus-visible, AA contrast, screen readers, reduced motion, minimal runtime JS.
