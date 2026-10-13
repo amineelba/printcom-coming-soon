@@ -1,64 +1,115 @@
 "use client";
 
 /**
- * Cursor image trail, adapted from React Bits "Image Trail" (variant 1):
- * https://reactbits.dev/animations/image-trail
+ * Fullscreen cursor image trail, adapted from React Bits "Image Trail"
+ * (variant 1): https://reactbits.dev/animations/image-trail
  * Source: https://github.com/DavidHDev/react-bits
  * Copyright (c) 2026 David Haz. MIT + Commons Clause License Condition v1.0.
  * Used here as part of a website, as the licence permits.
  *
- * Changes: typed `TrailAsset[]` input, next/image, mouse-only pointer events,
- * render loop that sleeps when idle, decorative (aria-hidden) output.
+ * Changes: window-level pointer tracking, small reusable DOM pool, images
+ * fetched progressively (look-ahead of a few items, never all at once), card
+ * size from each image's own aspect ratio (no cropping), render loop that
+ * sleeps when the pointer is idle. Output is decorative (aria-hidden).
  */
 
 import { gsap } from "gsap";
-import Image from "next/image";
 import { useEffect, useRef } from "react";
 import type { TrailAsset } from "@/config/site-assets";
 
-const THRESHOLD = 90; // px of pointer travel between two images
+const POOL_SIZE = 6; // max cards alive at once (controls overlap)
+const LOOKAHEAD = 2; // images fetched ahead of the one being shown
+const THRESHOLD = 120; // px of pointer travel between two cards
 const SMOOTHING = 0.1;
+const IDLE_MS = 300;
+
+type Entry = { img: HTMLImageElement; ready: boolean; failed: boolean };
 
 export default function ImageTrail({ images }: { images: TrailAsset[] }) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const layerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container || images.length === 0) return;
+    const layer = layerRef.current;
+    if (!layer || images.length === 0) return;
 
-    const items = Array.from(
-      container.querySelectorAll<HTMLElement>("[data-trail-item]"),
-    );
+    // Long side of a card: 280–340px depending on viewport width.
+    const longSide = () =>
+      Math.round(Math.min(340, Math.max(280, window.innerWidth * 0.21)));
+
+    // Reusable pool, created empty: no <img> src, nothing visible or fetched.
+    const pool = Array.from({ length: POOL_SIZE }, () => {
+      const card = document.createElement("div");
+      card.className =
+        "absolute left-0 top-0 overflow-hidden rounded-2xl opacity-0 shadow-[0_22px_50px_-16px_rgb(0_20_90/0.75)] [will-change:transform]";
+      const img = document.createElement("img");
+      img.alt = "";
+      img.draggable = false;
+      img.decoding = "async";
+      img.className = "block h-full w-full object-contain";
+      card.append(img);
+      layer.append(card);
+      return { card, img, busy: false };
+    });
+
+    const cache = new Map<number, Entry>();
+    const ensure = (i: number): Entry => {
+      let entry = cache.get(i);
+      if (!entry) {
+        const img = new Image();
+        entry = { img, ready: false, failed: false };
+        const e = entry;
+        img.onload = () => void (e.ready = true);
+        img.onerror = () => void (e.failed = true);
+        img.src = images[i].src;
+        cache.set(i, entry);
+      }
+      return entry;
+    };
+
     const mouse = { x: 0, y: 0 };
     const last = { x: 0, y: 0 };
     const smooth = { x: 0, y: 0 };
-    let index = -1;
+    let next = 0;
     let z = 1;
-    let active = 0;
-    let inside = false;
+    let busyCount = 0;
+    let lastMove = 0;
     let raf: number | null = null;
-
-    const local = (e: PointerEvent) => {
-      const r = container.getBoundingClientRect();
-      return { x: e.clientX - r.left, y: e.clientY - r.top };
-    };
+    let seeded = false;
 
     const show = () => {
-      index = (index + 1) % items.length;
-      const el = items[index];
-      const w = el.offsetWidth;
-      const h = el.offsetHeight;
-      gsap.killTweensOf(el);
+      const slot = pool.find((s) => !s.busy);
+      if (!slot) return; // pool exhausted: skip, never pile up
+
+      let entry = ensure(next);
+      for (let k = 1; k <= LOOKAHEAD; k++) ensure((next + k) % images.length);
+      if (entry.failed) {
+        next = (next + 1) % images.length;
+        entry = ensure(next);
+      }
+      if (!entry.ready) return; // not downloaded yet: try on the next step
+
+      const { naturalWidth: nw, naturalHeight: nh } = entry.img;
+      const side = longSide();
+      const w = nw >= nh ? side : Math.round((side * nw) / nh);
+      const h = nw >= nh ? Math.round((side * nh) / nw) : side;
+      slot.img.src = entry.img.src;
+      slot.card.style.width = `${w}px`;
+      slot.card.style.height = `${h}px`;
+      next = (next + 1) % images.length;
+
+      slot.busy = true;
+      busyCount++;
+      gsap.killTweensOf(slot.card);
       gsap
         .timeline({
-          onStart: () => void active++,
           onComplete: () => {
-            active--;
-            if (active === 0) z = 1;
+            slot.busy = false;
+            busyCount--;
+            if (busyCount === 0) z = 1;
           },
         })
         .fromTo(
-          el,
+          slot.card,
           {
             opacity: 1,
             scale: 1,
@@ -67,14 +118,18 @@ export default function ImageTrail({ images }: { images: TrailAsset[] }) {
             y: smooth.y - h / 2,
           },
           {
-            duration: 0.4,
-            ease: "power1",
+            duration: 0.55,
+            ease: "power2.out",
             x: mouse.x - w / 2,
             y: mouse.y - h / 2,
           },
           0,
         )
-        .to(el, { duration: 0.4, ease: "power3", opacity: 0, scale: 0.2 }, 0.4);
+        .to(
+          slot.card,
+          { duration: 0.5, ease: "power2.in", opacity: 0, scale: 0.6 },
+          0.55,
+        );
     };
 
     const tick = () => {
@@ -85,63 +140,44 @@ export default function ImageTrail({ images }: { images: TrailAsset[] }) {
         last.x = mouse.x;
         last.y = mouse.y;
       }
-      raf = inside || active > 0 ? requestAnimationFrame(tick) : null;
+      const idle = performance.now() - lastMove > IDLE_MS;
+      raf = idle && busyCount === 0 ? null : requestAnimationFrame(tick);
     };
 
-    const onEnter = (e: PointerEvent) => {
-      if (e.pointerType !== "mouse") return;
-      const p = local(e);
-      mouse.x = smooth.x = last.x = p.x;
-      mouse.y = smooth.y = last.y = p.y;
-      inside = true;
-      if (raf === null) raf = requestAnimationFrame(tick);
-    };
     const onMove = (e: PointerEvent) => {
       if (e.pointerType !== "mouse") return;
-      if (!inside) return onEnter(e);
-      const p = local(e);
-      mouse.x = p.x;
-      mouse.y = p.y;
-    };
-    const onLeave = () => {
-      inside = false;
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      lastMove = performance.now();
+      if (!seeded) {
+        // First move: nothing is fetched or shown before this.
+        seeded = true;
+        smooth.x = last.x = mouse.x;
+        smooth.y = last.y = mouse.y;
+        for (let k = 0; k <= LOOKAHEAD; k++) ensure(k % images.length);
+      }
+      if (raf === null) raf = requestAnimationFrame(tick);
     };
 
-    container.addEventListener("pointerenter", onEnter);
-    container.addEventListener("pointermove", onMove);
-    container.addEventListener("pointerleave", onLeave);
+    window.addEventListener("pointermove", onMove, { passive: true });
     return () => {
-      container.removeEventListener("pointerenter", onEnter);
-      container.removeEventListener("pointermove", onMove);
-      container.removeEventListener("pointerleave", onLeave);
+      window.removeEventListener("pointermove", onMove);
       if (raf !== null) cancelAnimationFrame(raf);
-      items.forEach((el) => gsap.killTweensOf(el));
+      pool.forEach(({ card }) => {
+        gsap.killTweensOf(card);
+        card.remove();
+      });
+      cache.forEach(({ img }) => {
+        img.onload = img.onerror = null;
+      });
     };
   }, [images]);
 
   return (
     <div
-      ref={containerRef}
+      ref={layerRef}
       aria-hidden="true"
-      className="absolute inset-0 z-10 overflow-hidden"
-    >
-      {images.map((img) => (
-        <div
-          key={img.src}
-          data-trail-item
-          className="pointer-events-none absolute left-0 top-0 aspect-[1.1] w-[170px] overflow-hidden rounded-2xl border border-white/30 opacity-0 shadow-[0_18px_40px_-14px_rgb(0_20_90/0.7)] [will-change:transform]"
-        >
-          <Image
-            src={img.src}
-            alt=""
-            fill
-            sizes="170px"
-            unoptimized
-            draggable={false}
-            className="object-cover"
-          />
-        </div>
-      ))}
-    </div>
+      className="pointer-events-none fixed inset-0 z-[5] h-dvh w-screen overflow-hidden"
+    />
   );
 }

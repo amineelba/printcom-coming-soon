@@ -1,7 +1,7 @@
 // Printcom — Image Trail asset manifest.
 // Filenames verified against public/media/image-trail/ on GitHub main.
 // Original uploaded filenames are Unicode NFD; URL-encoding preserves exact paths.
-// Array order controls the cursor trail and the first 3 static cards.
+// Array order controls the cursor trail order.
 // Uploaded product names are used as alt text; verify them against the photos before launch.
 // Change only this list to reorder or hide images.
 

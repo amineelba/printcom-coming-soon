@@ -1,6 +1,3 @@
-import { trailImages } from "@/config/site-assets";
-import { TrailZone } from "@/components/trail/TrailZone";
-
 const QUOTE_HREF = "mailto:contact@printcom.ma";
 
 export function Hero() {
@@ -48,13 +45,9 @@ export function Hero() {
           </a>
         </div>
 
-        {/* Sprint 3: owner-supplied images only. Empty list keeps the
-            column reserved on desktop and renders nothing. */}
-        {trailImages.length > 0 ? (
-          <TrailZone images={trailImages} />
-        ) : (
-          <div aria-hidden="true" className="hidden min-h-[26rem] lg:block" />
-        )}
+        {/* Keeps the copy in the left column. The image trail is a fullscreen
+            overlay (see TrailOverlay), so nothing lives here. */}
+        <div aria-hidden="true" className="hidden min-h-[26rem] lg:block" />
       </div>
     </section>
   );
