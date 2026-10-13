@@ -23,13 +23,35 @@ Storage: a **dedicated Printcom Neon Postgres database**. Nothing has been provi
 
 With no database the form shows an error and says the request was **not** saved. It never reports success. Errors are logged by name only, never with lead data.
 
+## New-lead email notification
+After a **successful insert whose status is `created`**, the route sends one email through Titan SMTP (`smtp.titan.email`, port 465, SSL, Nodemailer): `src/lib/leads/notify.ts`, orchestrated by `src/lib/leads/submit.ts`.
+
+- To: `LEAD_NOTIFY_TO` (`contact@printcom.ma`). From: the authenticated mailbox `LEAD_SMTP_USER`. **Reply-To: the prospect's email.** Body: name, email, phone, company, project. No attachment: **no catalogue is ever sent automatically.**
+- **Duplicates are never notified** (`duplicate` → no transport is even created).
+- The route waits for the SMTP result (12 s cap, `maxDuration = 30`).
+- If SMTP fails, times out, or the settings are missing: the lead **stays in Neon**, the visitor still sees the normal success message (the lead *was* saved), and a single line is logged with the error code only, e.g. `catalogue-leads: notification failed EAUTH`. Personal data and secrets are never logged. No automatic retry: check the logs and read the lead in Neon.
+- The email text is built from the lead fields; HTML output is escaped.
+
+### Vercel environment variables (all server-only, mark the password Sensitive)
+| Variable | Value |
+|---|---|
+| `DATABASE_URL` | Neon pooled connection string (dedicated Printcom database) |
+| `LEAD_SMTP_USER` | Titan mailbox used to authenticate and send (full address) |
+| `LEAD_SMTP_PASSWORD` | that mailbox's password (an app/SMTP password if Titan requires one) |
+| `LEAD_NOTIFY_TO` | `contact@printcom.ma` |
+
+Add them to **Preview** first; Production only after approval. Never use `NEXT_PUBLIC_`.
+
+### Tests
+`npm test` (Node's built-in runner, no extra dependency): new lead → email; duplicate → no email; SMTP failure and timeout → lead kept, log free of personal data and secrets; each missing setting → email skipped, lead kept; route without database → 503. **Not tested:** a real Titan connection (no credentials here): send one test lead from a Preview once the variables are set.
+
 ## Database setup (owner approval required first)
 1. In Neon, create a **new project dedicated to Printcom** (do not reuse another project). Pick an EU region close to Morocco; Neon holds personal data, so choose the region deliberately.
 2. Run `db/migrations/0001_create_catalogue_leads.sql` in the Neon SQL editor (or `psql "$DATABASE_URL" -f db/migrations/0001_create_catalogue_leads.sql`). It is idempotent. Rollback: `DROP TABLE catalogue_leads;`.
 3. Set `DATABASE_URL` (pooled connection string) as a **server-only** environment variable:
    - local: `.env.local` (see `.env.example`; `.env*` is git-ignored);
    - Vercel: Project `printcom-coming-soon` → Settings → Environment Variables, **Preview** first. Never prefix it with `NEXT_PUBLIC_`.
-4. Redeploy the Preview and submit a test lead. Delete the test row afterwards.
+4. Add the `LEAD_*` variables (see above), redeploy the Preview, submit a test lead, check the email arrives at `LEAD_NOTIFY_TO` with the right Reply-To. Delete the test row afterwards.
 
 Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `email`, `phone`, `company`, `project`, `consent_at`, `consent_version` (`catalogue-2026-10-v1`), `source` (`coming-soon-catalogue`), `status` (`new`/`contacted`/`qualified`/`discarded`), `created_at`.
 
@@ -47,7 +69,7 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 1. **Neon database** not created; `DATABASE_URL` not set anywhere. No lead can be saved until then.
 2. **Privacy notice**: no privacy policy page exists and the popup links to none. Needed before public launch: controller identity, purposes, retention period, rights (access / rectification / deletion) and a contact. Check obligations under Moroccan law 09-08 / CNDP (declaration or authorization) with a qualified advisor.
 3. **Retention and deletion process**: define how long leads are kept and how deletion requests are handled.
-4. **Who reads the leads and how**: there is no admin screen or notification email. Leads sit in Neon until someone queries them. Decide the follow-up process (and add an owner-approved notification if wanted).
+4. **Who reads the leads and how**: email notifications now go to `LEAD_NOTIFY_TO`, but there is no admin screen and no retry if the email fails: Neon is the source of truth. Decide the follow-up process.
 5. **Rate limiting**: the in-memory limiter is best effort only. Add a Vercel Firewall (WAF) rate-limit rule on `/api/catalogue-leads` before launch. Consider a CAPTCHA only if spam appears.
 6. **The catalogue PDF does not exist.** The UI says so and offers no download. When it exists, decide the delivery mode (email after confirmation is safer than a public link) as a separate, approved task.
 7. `contact@printcom.ma` must be a working mailbox (shown in the error message and used by the quote CTA).

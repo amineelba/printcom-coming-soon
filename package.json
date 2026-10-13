@@ -7,18 +7,21 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "typecheck": "next typegen && tsc --noEmit"
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "node --import ./tests/register.mjs --experimental-strip-types --no-warnings --test tests/*.test.ts"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "gsap": "^3.15.0",
     "next": "16.4.0",
+    "nodemailer": "^10.1.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",
+    "@types/nodemailer": "^8.0.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

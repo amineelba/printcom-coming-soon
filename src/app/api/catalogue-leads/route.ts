@@ -1,6 +1,10 @@
-import { insertLead, getSql } from "@/lib/leads/repository";
+import { getSql } from "@/lib/leads/repository";
 import { isRateLimited } from "@/lib/leads/rate-limit";
 import { validateLead } from "@/lib/leads/schema";
+import { submitLead } from "@/lib/leads/submit";
+
+// Room for the database write plus the SMTP round trip.
+export const maxDuration = 30;
 
 const MAX_BODY_BYTES = 8 * 1024;
 
@@ -55,7 +59,9 @@ export async function POST(request: Request) {
   if (!sql) return json({ ok: false, error: "unavailable" }, 503);
 
   try {
-    const status = await insertLead(sql, result.value);
+    // The notification outcome is deliberately not returned: once the lead is
+    // saved the visitor sees success, whatever happens to the email.
+    const { status } = await submitLead(sql, result.value);
     return json({ ok: true, status }, status === "created" ? 201 : 200);
   } catch (err) {
     // Log the error kind only: never lead data.
