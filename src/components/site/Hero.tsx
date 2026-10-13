@@ -3,7 +3,7 @@ import { ACTION_PRIMARY } from "./actions";
 
 const QUOTE_HREF = "mailto:contact@printcom.ma";
 
-export function Hero() {
+export function Hero({ privacyHref }: { privacyHref?: string }) {
   return (
     <section
       aria-labelledby="hero-title"
@@ -42,7 +42,7 @@ export function Hero() {
           Demander un devis
           <span aria-hidden="true">↗</span>
         </a>
-        <CatalogueLead />
+        <CatalogueLead privacyHref={privacyHref} />
       </div>
     </section>
   );

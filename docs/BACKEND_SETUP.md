@@ -53,7 +53,7 @@ Add them to **Preview** first; Production only after approval. Never use `NEXT_P
    - Vercel: Project `printcom-coming-soon` → Settings → Environment Variables, **Preview** first. Never prefix it with `NEXT_PUBLIC_`.
 4. Add the `LEAD_*` variables (see above), redeploy the Preview, submit a test lead, check the email arrives at `LEAD_NOTIFY_TO` with the right Reply-To. Delete the test row afterwards.
 
-Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `email`, `phone`, `company`, `project`, `consent_at`, `consent_version` (`catalogue-2026-10-v1`), `source` (`coming-soon-catalogue`), `status` (`new`/`contacted`/`qualified`/`discarded`), `created_at`.
+Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `email`, `phone`, `company`, `project`, `consent_at`, `consent_version` (`catalogue-2026-10-v2`; rows saved before 2026-10-20 keep `…-v1`, which is intentional: it records the wording the person actually accepted), `source` (`coming-soon-catalogue`), `status` (`new`/`contacted`/`qualified`/`discarded`), `created_at`.
 
 ## Verification already done
 - Migration + `insertLead` run against a real Postgres engine (PGlite, in a scratch folder, outside the repo): first insert, same-key retry, same-email duplicate, SQL-injection string stored as plain data, CHECK constraints, migration run twice.
@@ -61,15 +61,21 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 - **Not verified:** a live Neon connection (no database exists yet).
 
 ## Privacy and consent
-- Consent is required, timestamped (`consent_at`) and versioned. **If the consent wording in `CatalogueLead.tsx` changes, bump `CONSENT_VERSION` in `src/lib/leads/schema.ts`.**
+- Consent is required for the request only (not marketing: no marketing consent is collected or inferred), timestamped (`consent_at`) and versioned. **If the consent wording in `CatalogueLead.tsx` changes, bump `CONSENT_VERSION` in `src/lib/leads/schema.ts`.**
 - Collected: name, professional email, optional phone and company, project text. Used only to handle the request.
 - No cookies, analytics or third-party scripts were added.
 
 ## Remaining production blockers
 1. **Neon database** not created; `DATABASE_URL` not set anywhere. No lead can be saved until then.
-2. **Privacy notice**: no privacy policy page exists and the popup links to none. Needed before public launch: controller identity, purposes, retention period, rights (access / rectification / deletion) and a contact. Check obligations under Moroccan law 09-08 / CNDP (declaration or authorization) with a qualified advisor.
+2. **Privacy notice**: published as a draft with the owner-confirmed identity facts; retention period, storage/transfer locations, CNDP status and legal validation are shown as "Pas encore confirmé". Close them in `src/config/privacy.ts`, have a legal advisor review the text, then remove `noindex` if wanted. Verify the RC / seat consistency (RC Nador, registered address in Rabat).
 3. **Retention and deletion process**: define how long leads are kept and how deletion requests are handled.
 4. **Who reads the leads and how**: email notifications now go to `LEAD_NOTIFY_TO`, but there is no admin screen and no retry if the email fails: Neon is the source of truth. Decide the follow-up process.
 5. **Rate limiting**: the in-memory limiter is best effort only. Add a Vercel Firewall (WAF) rate-limit rule on `/api/catalogue-leads` before launch. Consider a CAPTCHA only if spam appears.
 6. **The catalogue PDF does not exist.** The UI says so and offers no download. When it exists, decide the delivery mode (email after confirmation is safer than a public link) as a separate, approved task.
 7. `contact@printcom.ma` must be a working mailbox (shown in the error message and used by the quote CTA).
+
+## Privacy page `/politique-de-confidentialite`
+- Content: `src/app/politique-de-confidentialite/page.tsx`. Facts live in `src/config/privacy.ts`.
+- **Confirmed by the owner and published:** legal entity, brand, RC, ICE, address, 30-day response time, contact. **Unconfirmed and shown publicly as "Pas encore confirmé":** retention period, storage/transfer locations, CNDP status, legal validation date. Nothing is invented and the page claims no compliance.
+- Visible (page + link in the form) as soon as identity, address and response time are filled. Kill switch: `PRIVACY_PAGE_DISABLED=true` (build-time; redeploy). `noindex` until a legal advisor validates the text.
+- To close a pending point: fill the entry in `src/config/privacy.ts` (the page then prints it instead of "Pas encore confirmé"), redeploy.

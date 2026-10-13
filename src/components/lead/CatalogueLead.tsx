@@ -44,7 +44,7 @@ const inputCls =
 const labelCls = "flex flex-col gap-[5px] text-pf-sm font-semibold text-[#17386d]";
 const errCls = "text-pf-sm font-medium text-[#b3261e]";
 
-export function CatalogueLead() {
+export function CatalogueLead({ privacyHref }: { privacyHref?: string }) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
   const keyRef = useRef<string>("");
@@ -168,8 +168,8 @@ export function CatalogueLead() {
         aria-haspopup="dialog"
         onClick={open}
       >
-        Télécharger notre catalogue
-        <span aria-hidden="true">↓</span>
+        Demander notre catalogue
+        <span aria-hidden="true">→</span>
       </button>
 
       <dialog
@@ -191,12 +191,11 @@ export function CatalogueLead() {
           </button>
 
           <h2 id={id("title")} className="mb-2.5 pr-10 text-pf-2 font-semibold leading-[1.2] text-[#11265c]">
-            Recevez notre catalogue
+            Demandez notre catalogue
           </h2>
           <p id={id("intro")} className="mb-[19px] text-pf-0 leading-normal text-[#576781]">
-            Laissez vos coordonnées pour demander notre catalogue. Il n’est pas encore disponible
-            en téléchargement : votre demande sera enregistrée et l’équipe Printcom pourra vous
-            recontacter.
+            Laissez-nous vos coordonnées : notre équipe reviendra vers vous par email pour vous
+            transmettre le catalogue.
           </p>
 
           {phase === "success" ? (
@@ -206,14 +205,11 @@ export function CatalogueLead() {
               role="status"
               className="rounded-[10px] border border-[#95d0ac] bg-[#effcf3] p-4 text-pf-0 leading-normal text-[#155931] outline-none"
             >
-              <p className="font-semibold">
+              <p>
                 {outcome === "duplicate"
-                  ? "Votre demande avait déjà été enregistrée."
-                  : "Merci, votre demande est enregistrée."}
-              </p>
-              <p className="mt-1.5">
-                Notre catalogue n’est pas encore disponible en téléchargement. Aucun fichier ne vous
-                a été envoyé : l’équipe Printcom pourra vous recontacter à ce sujet.
+                  ? "Votre demande a déjà été enregistrée. "
+                  : "Votre demande a bien été enregistrée. "}
+                Notre équipe reviendra vers vous par email pour vous transmettre le catalogue.
               </p>
               <button
                 type="button"
@@ -262,7 +258,11 @@ export function CatalogueLead() {
               <div className="flex flex-col gap-1 min-[481px]:col-span-2">
                 <div className="flex items-start gap-[9px] text-pf-sm leading-[1.45] text-[#526483]">
                   <input
-                    {...fieldProps("consent")}
+                    id={id("consent")}
+                    aria-invalid={errors.consent ? true : undefined}
+                    aria-describedby={
+                      errors.consent ? `${id("consent-help")} ${id("consent-error")}` : id("consent-help")
+                    }
                     type="checkbox"
                     name="consent"
                     required
@@ -271,10 +271,31 @@ export function CatalogueLead() {
                     className="mt-[3px] size-4 shrink-0 accent-[#0a45cd] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1558db]"
                   />
                   <label htmlFor={id("consent")}>
-                    J’accepte d’être recontacté(e) par Printcom au sujet de cette demande. *
+                    J’accepte que Printcom utilise les informations saisies pour répondre à ma demande
+                    de catalogue et me recontacter à ce sujet. *
                   </label>
                 </div>
-                {fieldError("consent")}
+                <p id={id("consent-help")} className="pl-[25px] text-pf-sm leading-[1.45] text-[#526483]">
+                  Cette case ne concerne que votre demande : elle ne vous inscrit à aucune
+                  communication commerciale, et aucun email promotionnel ne vous sera envoyé sans
+                  votre accord distinct.
+                  {privacyHref ? (
+                    <>
+                      {" "}
+                      <a
+                        href={privacyHref}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-[#1246c3] underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#1558db]"
+                      >
+                        Lire la politique de confidentialité
+                        <span className="sr-only"> (s’ouvre dans un nouvel onglet)</span>
+                      </a>
+                      .
+                    </>
+                  ) : null}
+                </p>
+                <div className="pl-[25px]">{fieldError("consent")}</div>
               </div>
 
               <div aria-live="polite" className="min-[481px]:col-span-2">
@@ -291,7 +312,7 @@ export function CatalogueLead() {
                 aria-busy={busy}
                 className="cursor-pointer rounded-full bg-[#1246c3] px-6 py-3.5 text-pf-0 font-semibold text-white hover:bg-[#0a379e] focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#1558db] disabled:cursor-progress disabled:opacity-70 min-[481px]:col-span-2"
               >
-                {busy ? "Envoi en cours…" : "Obtenir mon catalogue"}
+                {busy ? "Envoi en cours…" : "Envoyer ma demande"}
               </button>
               <p className="text-center text-pf-sm leading-normal text-[#66758a] min-[481px]:col-span-2">
                 Vos données ne servent qu’à traiter cette demande.
