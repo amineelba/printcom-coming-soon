@@ -84,3 +84,45 @@ body {
   font-size: 12.5px;
   letter-spacing: 0.04em;
 }
+
+/* ---------- Logo marquee ---------- */
+.marquee-viewport {
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.marquee-track {
+  animation: marquee-scroll var(--marquee-duration, 60s) linear infinite;
+}
+
+.marquee:hover .marquee-track,
+.marquee:focus-within .marquee-track,
+.marquee:focus-visible .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes marquee-scroll {
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+/* Reduced motion: no movement, one wrapped, centered copy of the logos. */
+@media (prefers-reduced-motion: reduce) {
+  .marquee-viewport {
+    mask-image: none;
+  }
+  .marquee-track {
+    animation: none;
+    width: 100%;
+  }
+  .marquee-dup {
+    display: none;
+  }
+  .marquee-half {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    padding-right: 0;
+    row-gap: 1.5rem;
+  }
+}

@@ -6,6 +6,7 @@
 // Change only this list to reorder or hide images.
 
 export type TrailAsset = { src: string; alt: string };
+export type MarqueeLogo = { src: string; alt: string; href?: string };
 
 export const trailImages: TrailAsset[] = [
   { src: "/media/image-trail/Brochures_result.avif", alt: "Brochures" },
@@ -38,4 +39,14 @@ export const trailImages: TrailAsset[] = [
   { src: "/media/image-trail/Habillage%20de%20vitrines_result.avif", alt: "Habillage de vitrines" },
   { src: "/media/image-trail/Habillage%20de%20ve%CC%81hicules_result.avif", alt: "Habillage de véhicules" },
   { src: "/media/image-trail/Plaques%20professionnelles_result.avif", alt: "Plaques professionnelles" },
+];
+
+// Authorized customer/partner logos supplied by the owner (public/media/marquee/).
+// SVGs are served as <img> assets, never injected inline. Array order = display order.
+// No href: no logo links anywhere until the owner provides real, approved URLs.
+export const marqueeLogos: MarqueeLogo[] = [
+  { src: "/media/marquee/212%20CNC.svg", alt: "212 CNC" },
+  { src: "/media/marquee/Al-Mouwakib.svg", alt: "Al-Mouwakib" },
+  { src: "/media/marquee/Intercocina.svg", alt: "Intercocina" },
+  { src: "/media/marquee/MY%20Prod%20%E2%84%A2.svg", alt: "MY Prod" },
 ];
