@@ -67,7 +67,7 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 
 ## Remaining production blockers
 1. **Neon database** not created; `DATABASE_URL` not set anywhere. No lead can be saved until then.
-2. **Privacy notice**: no privacy policy page exists and the popup links to none. Needed before public launch: controller identity, purposes, retention period, rights (access / rectification / deletion) and a contact. Check obligations under Moroccan law 09-08 / CNDP (declaration or authorization) with a qualified advisor.
+2. **Privacy notice**: published as a draft with the owner-confirmed identity facts; retention period, storage/transfer locations, CNDP status and legal validation are shown as "Pas encore confirmé". Close them in `src/config/privacy.ts`, have a legal advisor review the text, then remove `noindex` if wanted. Verify the RC / seat consistency (RC Nador, registered address in Rabat).
 3. **Retention and deletion process**: define how long leads are kept and how deletion requests are handled.
 4. **Who reads the leads and how**: email notifications now go to `LEAD_NOTIFY_TO`, but there is no admin screen and no retry if the email fails: Neon is the source of truth. Decide the follow-up process.
 5. **Rate limiting**: the in-memory limiter is best effort only. Add a Vercel Firewall (WAF) rate-limit rule on `/api/catalogue-leads` before launch. Consider a CAPTCHA only if spam appears.
@@ -75,7 +75,7 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 7. `contact@printcom.ma` must be a working mailbox (shown in the error message and used by the quote CTA).
 
 ## Privacy page `/politique-de-confidentialite`
-- Content: `src/app/politique-de-confidentialite/page.tsx`. Owner-only facts live in `src/config/privacy.ts` (all `null` = flagged "À confirmer par Printcom" on the page). Nothing legal was invented.
-- **Hidden by default** (404) and the form shows no link. Env flag `PRIVACY_PAGE_ENABLED=true` (server-only, read at build time: redeploy after changing it) shows it. In **production** it stays hidden until every entry of `src/config/privacy.ts` is filled, even with the flag on. Preview/dev with the flag on show the flagged draft.
-- Page is `noindex` until the owner validates the text; change `robots` in the page then.
-- To publish: fill `src/config/privacy.ts` with confirmed facts, get the text reviewed, set `PRIVACY_PAGE_ENABLED=true` on Production, redeploy.
+- Content: `src/app/politique-de-confidentialite/page.tsx`. Facts live in `src/config/privacy.ts`.
+- **Confirmed by the owner and published:** legal entity, brand, RC, ICE, address, 30-day response time, contact. **Unconfirmed and shown publicly as "Pas encore confirmé":** retention period, storage/transfer locations, CNDP status, legal validation date. Nothing is invented and the page claims no compliance.
+- Visible (page + link in the form) as soon as identity, address and response time are filled. Kill switch: `PRIVACY_PAGE_DISABLED=true` (build-time; redeploy). `noindex` until a legal advisor validates the text.
+- To close a pending point: fill the entry in `src/config/privacy.ts` (the page then prints it instead of "Pas encore confirmé"), redeploy.

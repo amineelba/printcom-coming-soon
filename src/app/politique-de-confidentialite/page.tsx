@@ -5,26 +5,29 @@ import type { ReactNode } from "react";
 import { BlueprintBackground } from "@/components/blueprint/BlueprintBackground";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { PRIVACY_CONTACT, privacyFacts } from "@/config/privacy";
-import { isPrivacyPageVisible, missingPrivacyFacts } from "@/lib/privacy";
+import { CATALOGUE_SENDER, PRIVACY_CONTACT, privacyFacts } from "@/config/privacy";
+import { isPrivacyPageVisible, pendingPrivacyFacts } from "@/lib/privacy";
 
 export const metadata: Metadata = {
   title: "Politique de confidentialité — Printcom",
   description: "Traitement des données personnelles du formulaire de demande de catalogue Printcom.",
-  robots: { index: false, follow: false }, // until the owner validates the text
+  robots: { index: false, follow: false }, // text not yet validated by a legal advisor
 };
 
-/** Visible flag for a fact only the owner can confirm. */
-function ToConfirm({ children }: { children: ReactNode }) {
+const link =
+  "text-[#1246c3] underline underline-offset-2 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#1558db]";
+
+/** A point Printcom has not settled yet: said openly, not hidden. */
+function Pending({ children }: { children: ReactNode }) {
   return (
     <span className="rounded bg-[#fff3cd] px-1.5 py-0.5 text-[#664d03]">
-      <strong>À confirmer par Printcom :</strong> {children}
+      <strong>Pas encore confirmé :</strong> {children}
     </span>
   );
 }
 
-function Fact({ value, missing }: { value: string | null; missing: string }) {
-  return value ? <>{value}</> : <ToConfirm>{missing}</ToConfirm>;
+function Fact({ value, pending }: { value: string | null; pending: string }) {
+  return value ? <>{value}</> : <Pending>{pending}</Pending>;
 }
 
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
@@ -42,7 +45,12 @@ export default function PrivacyPage() {
   if (!isPrivacyPageVisible()) notFound();
 
   const f = privacyFacts;
-  const draft = missingPrivacyFacts().length > 0;
+  const hasPending = pendingPrivacyFacts().length > 0;
+  const mail = (
+    <a className={link} href={`mailto:${PRIVACY_CONTACT}`}>
+      {PRIVACY_CONTACT}
+    </a>
+  );
 
   return (
     <div className="relative flex min-h-dvh flex-col overflow-x-clip">
@@ -52,7 +60,7 @@ export default function PrivacyPage() {
         <main className="flex flex-1 justify-center px-5 pb-12 pt-6">
           <article className="w-full max-w-[760px] rounded-[22px] border border-[#dbe3f3] bg-white p-[clamp(20px,4vw,40px)] text-pf-0 leading-[1.65] text-[#243252] shadow-[0_30px_110px_#00155f55]">
             <p>
-              <Link href="/" className="text-[#1246c3] underline underline-offset-2 focus-visible:outline-[3px] focus-visible:outline-offset-2 focus-visible:outline-[#1558db]">
+              <Link href="/" className={link}>
                 ← Retour au site
               </Link>
             </p>
@@ -60,36 +68,31 @@ export default function PrivacyPage() {
               Politique de confidentialité
             </h1>
             <p className="mt-2 text-pf-sm text-[#526483]">
-              Formulaire « Demander notre catalogue » du site Printcom en construction.
-              {f.validatedOn ? ` Dernière validation : ${f.validatedOn}.` : null}
+              Formulaire « Demander notre catalogue » du site Printcom.{" "}
+              {f.validatedOn
+                ? `Texte validé le ${f.validatedOn}.`
+                : "Ce texte n’a pas encore été validé par un conseil juridique."}
             </p>
 
-            {draft ? (
-              <p role="note" className="mt-5 rounded-[10px] border border-[#e0c46c] bg-[#fff8e1] p-4 text-pf-sm text-[#664d03]">
-                <strong>Version de travail, non validée.</strong> Les mentions marquées « À confirmer
-                par Printcom » doivent être complétées et vérifiées par le propriétaire (idéalement
-                avec un conseil juridique) avant toute publication. Ce texte décrit le
-                fonctionnement réel du formulaire ; il ne constitue pas une garantie de conformité
-                légale.
-              </p>
-            ) : null}
+            <p role="note" className="mt-5 rounded-[10px] border border-[#e0c46c] bg-[#fff8e1] p-4 text-pf-sm text-[#664d03]">
+              <strong>Publié en l’état.</strong> Cette page décrit le fonctionnement réel du
+              formulaire.{" "}
+              {hasPending
+                ? "Certains points ne sont pas encore arrêtés par Printcom : ils sont signalés « Pas encore confirmé » et seront complétés. "
+                : null}
+              Elle ne constitue pas une déclaration de conformité à une réglementation.
+            </p>
 
             <Section id="responsable" title="1. Responsable du traitement et contact">
               <p>
-                Le responsable du traitement est Printcom :{" "}
-                <Fact value={f.controllerIdentity} missing="dénomination sociale et forme juridique" />
-                {". "}
-                Adresse :{" "}
-                <Fact value={f.controllerAddress} missing="adresse postale du siège" />
-                {"."}
+                Le responsable du traitement est{" "}
+                <Fact value={f.controllerIdentity} pending="dénomination sociale et forme juridique" />
+                {f.brand ? ` (marque ${f.brand})` : null}
+                {f.registerNumber ? `, ${f.registerNumber}` : null}
+                {f.ice ? `, ${f.ice}` : null}. Adresse :{" "}
+                <Fact value={f.controllerAddress} pending="adresse postale du siège" />.
               </p>
-              <p>
-                Contact pour toute question sur vos données :{" "}
-                <a className="text-[#1246c3] underline underline-offset-2" href={`mailto:${PRIVACY_CONTACT}`}>
-                  {PRIVACY_CONTACT}
-                </a>
-                .
-              </p>
+              <p>Contact pour toute question sur vos données : {mail}.</p>
             </Section>
 
             <Section id="donnees" title="2. Données personnelles collectées par le formulaire">
@@ -108,7 +111,10 @@ export default function PrivacyPage() {
                 Le formulaire n’enregistre pas votre adresse IP dans la base de données de demandes.
                 Les services techniques listés ci-dessous peuvent toutefois conserver des journaux
                 techniques de connexion.{" "}
-                <ToConfirm>vérifier ces journaux et d’éventuels cookies déposés par l’hébergement ou le service DNS/CDN.</ToConfirm>
+                <Pending>
+                  ces journaux, ainsi que d’éventuels cookies déposés par l’hébergement ou le service
+                  DNS/CDN, n’ont pas encore été vérifiés.
+                </Pending>
               </p>
             </Section>
 
@@ -124,14 +130,15 @@ export default function PrivacyPage() {
                 d’information sans votre accord distinct.
               </p>
               <p>
-                <ToConfirm>confirmation de la base légale par le propriétaire / son conseil.</ToConfirm>
+                <Pending>cette base légale n’a pas encore été validée par un conseil juridique.</Pending>
               </p>
             </Section>
 
             <Section id="destinataires" title="4. Destinataires et prestataires techniques">
               <p>
                 Les données sont accessibles aux personnes de l’équipe Printcom chargées de répondre
-                aux demandes. Le catalogue est transmis manuellement par l’équipe, par email.
+                aux demandes. Le catalogue est transmis manuellement par l’équipe, par email, depuis
+                l’adresse {CATALOGUE_SENDER}.
               </p>
               <p>Prestataires techniques utilisés par le formulaire :</p>
               <ul className="list-disc space-y-1 pl-5">
@@ -140,42 +147,40 @@ export default function PrivacyPage() {
                 <li>Titan : messagerie email utilisée pour notifier l’équipe Printcom et vous répondre ;</li>
                 <li>
                   services DNS / réseau du nom de domaine.{" "}
-                  <ToConfirm>nom du ou des services effectivement utilisés en production.</ToConfirm>
+                  <Pending>le nom des services effectivement utilisés n’a pas encore été confirmé.</Pending>
                 </li>
               </ul>
               <p>
-                Localisation du stockage et transferts éventuels hors du Maroc :{" "}
-                <Fact value={f.dataLocations} missing="régions d’hébergement de Vercel, Neon et Titan, et encadrement des transferts" />
+                Lieux de stockage et de traitement, y compris d’éventuels transferts hors du Maroc :{" "}
+                <Fact value={f.dataLocations} pending="ces lieux n’ont pas encore été confirmés pour Vercel, Neon et Titan." />
               </p>
             </Section>
 
             <Section id="conservation" title="5. Conservation et suppression">
               <p>
                 Durée de conservation :{" "}
-                <Fact value={f.retention} missing="durée précise et moment de la suppression des demandes" />
+                <Fact value={f.retention} pending="Printcom n’a pas encore fixé de durée de conservation précise. Elle sera indiquée ici dès qu’elle sera arrêtée." />
               </p>
               <p>
-                Vous pouvez demander la suppression de votre demande à tout moment (voir section 6).
+                En attendant, vous pouvez demander la suppression de votre demande à tout moment (voir
+                section 6).
               </p>
             </Section>
 
             <Section id="droits" title="6. Vos droits : accès, rectification, suppression">
               <p>
                 Vous pouvez demander l’accès aux données vous concernant, leur rectification ou leur
-                suppression, et retirer votre consentement, en écrivant à{" "}
-                <a className="text-[#1246c3] underline underline-offset-2" href={`mailto:${PRIVACY_CONTACT}`}>
-                  {PRIVACY_CONTACT}
-                </a>{" "}
-                en indiquant le nom et l’email utilisés dans le formulaire. Printcom peut vous demander
-                de justifier votre identité.
+                suppression, et retirer votre consentement, en écrivant à {mail} en indiquant le nom
+                et l’email utilisés dans le formulaire. Printcom peut vous demander de justifier votre
+                identité.
               </p>
               <p>
-                Délai de réponse :{" "}
-                <Fact value={f.requestDeadline} missing="délai de réponse aux demandes" />
+                Printcom répond à ces demandes dans un délai de{" "}
+                <Fact value={f.requestDeadline} pending="délai de réponse" />.
               </p>
               <p>
                 Autorité de protection des données (CNDP) :{" "}
-                <Fact value={f.authorityStatus} missing="statut de la déclaration ou autorisation, et mention du droit de réclamation, selon la loi applicable" />
+                <Fact value={f.authorityStatus} pending="Printcom n’a pas encore confirmé le statut de ses formalités auprès de la CNDP (déclaration ou autorisation) ni les voies de réclamation applicables." />
               </p>
             </Section>
 

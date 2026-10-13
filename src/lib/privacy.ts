@@ -1,25 +1,37 @@
-import { privacyFacts, type PrivacyFacts } from "@/config/privacy";
+import {
+  privacyFacts,
+  REQUIRED_FOR_PUBLICATION,
+  type PrivacyFacts,
+} from "@/config/privacy";
 
 export const PRIVACY_PATH = "/politique-de-confidentialite";
 
 type Env = Record<string, string | undefined>;
 
-export function missingPrivacyFacts(facts: PrivacyFacts = privacyFacts): (keyof PrivacyFacts)[] {
-  return (Object.keys(facts) as (keyof PrivacyFacts)[]).filter((k) => !facts[k]?.trim());
+const isMissing = (v: string | null | undefined) => !v?.trim();
+
+/** Facts still unconfirmed (shown on the page as "not yet confirmed"). */
+export function pendingPrivacyFacts(facts: PrivacyFacts = privacyFacts): (keyof PrivacyFacts)[] {
+  return (Object.keys(facts) as (keyof PrivacyFacts)[]).filter((k) => isMissing(facts[k]));
+}
+
+/** Facts without which the page must not be published at all. */
+export function missingRequiredPrivacyFacts(
+  facts: PrivacyFacts = privacyFacts,
+): (keyof PrivacyFacts)[] {
+  return REQUIRED_FOR_PUBLICATION.filter((k) => isMissing(facts[k]));
 }
 
 /**
- * The privacy page (and the link to it in the form) is visible only when:
- *  - PRIVACY_PAGE_ENABLED === "true" (server-only flag, off by default), and
- *  - in production, every owner-supplied fact is filled in.
- * Previews/dev with the flag on may show the draft with its "to confirm" flags.
- * Read at build time: redeploy after changing the flag.
+ * The privacy page, and the link to it in the form, are visible when the
+ * controller identity, address and request deadline are filled in. Facts that
+ * are still unknown are disclosed on the page, not hidden. `PRIVACY_PAGE_DISABLED=true`
+ * is a kill switch (read at build time: redeploy after changing it).
  */
 export function isPrivacyPageVisible(
   env: Env = process.env,
   facts: PrivacyFacts = privacyFacts,
 ): boolean {
-  if (env.PRIVACY_PAGE_ENABLED !== "true") return false;
-  if (env.VERCEL_ENV === "production" && missingPrivacyFacts(facts).length > 0) return false;
-  return true;
+  if (env.PRIVACY_PAGE_DISABLED === "true") return false;
+  return missingRequiredPrivacyFacts(facts).length === 0;
 }

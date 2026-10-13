@@ -2,43 +2,70 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { describe, it } from "node:test";
 import type { PrivacyFacts } from "@/config/privacy";
-import { privacyFacts } from "@/config/privacy";
+import { privacyFacts, REQUIRED_FOR_PUBLICATION } from "@/config/privacy";
 import { CONSENT_VERSION, validateLead } from "@/lib/leads/schema";
-import { isPrivacyPageVisible, missingPrivacyFacts } from "@/lib/privacy";
+import {
+  isPrivacyPageVisible,
+  missingRequiredPrivacyFacts,
+  pendingPrivacyFacts,
+} from "@/lib/privacy";
 
-const COMPLETE: PrivacyFacts = {
-  controllerIdentity: "x",
-  controllerAddress: "x",
-  retention: "x",
-  dataLocations: "x",
-  authorityStatus: "x",
-  requestDeadline: "x",
-  validatedOn: "2026-10-20",
-};
+const NONE = Object.fromEntries(Object.keys(privacyFacts).map((k) => [k, null])) as PrivacyFacts;
+
+describe("privacy facts: only what the owner confirmed", () => {
+  it("contains exactly the owner-confirmed identity facts", () => {
+    assert.equal(privacyFacts.controllerIdentity, "Global Communication Corporate SARL AU");
+    assert.equal(privacyFacts.registerNumber, "RC Nador n° 30317");
+    assert.equal(privacyFacts.ice, "ICE 003852720000039");
+    assert.equal(
+      privacyFacts.controllerAddress,
+      "10 Rue Dar El Bayda, Quartier Hassan, 10000 Rabat, Maroc",
+    );
+    assert.equal(privacyFacts.requestDeadline, "30 jours");
+  });
+  it("keeps the unconfirmed facts unset (nothing invented)", () => {
+    for (const k of ["retention", "dataLocations", "authorityStatus", "validatedOn"] as const) {
+      assert.equal(privacyFacts[k], null, k);
+    }
+    assert.deepEqual(pendingPrivacyFacts().sort(), [
+      "authorityStatus",
+      "dataLocations",
+      "retention",
+      "validatedOn",
+    ]);
+  });
+});
 
 describe("privacy page visibility", () => {
-  it("ships with every owner-only fact unconfirmed (nothing invented)", () => {
-    assert.equal(missingPrivacyFacts(privacyFacts).length, Object.keys(privacyFacts).length);
+  it("is visible with the confirmed facts, even while other points are pending", () => {
+    assert.equal(isPrivacyPageVisible({}, privacyFacts), true);
+    assert.deepEqual(missingRequiredPrivacyFacts(privacyFacts), []);
   });
-  it("is hidden by default", () => {
-    assert.equal(isPrivacyPageVisible({}, COMPLETE), false);
-    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_ENABLED: "false" }, COMPLETE), false);
-    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_ENABLED: "1" }, COMPLETE), false);
+  it("is hidden when a required fact is missing", () => {
+    for (const k of REQUIRED_FOR_PUBLICATION) {
+      assert.equal(isPrivacyPageVisible({}, { ...privacyFacts, [k]: " " }), false, k);
+    }
+    assert.equal(isPrivacyPageVisible({}, NONE), false);
   });
-  it("production stays hidden while any fact is missing, even with the flag on", () => {
-    const env = { PRIVACY_PAGE_ENABLED: "true", VERCEL_ENV: "production" };
-    assert.equal(isPrivacyPageVisible(env, privacyFacts), false);
-    assert.equal(isPrivacyPageVisible(env, { ...COMPLETE, retention: " " }), false);
+  it("kill switch PRIVACY_PAGE_DISABLED=true hides it", () => {
+    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_DISABLED: "true" }, privacyFacts), false);
+    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_DISABLED: "false" }, privacyFacts), true);
   });
-  it("production shows the page once the flag is on and every fact is filled", () => {
-    assert.equal(
-      isPrivacyPageVisible({ PRIVACY_PAGE_ENABLED: "true", VERCEL_ENV: "production" }, COMPLETE),
-      true,
-    );
+});
+
+describe("page text does not claim compliance or invent facts", () => {
+  const src = readFileSync(
+    new URL("../src/app/politique-de-confidentialite/page.tsx", import.meta.url),
+    "utf8",
+  );
+  it("states it is not a compliance statement", () => {
+    assert.ok(src.includes("ne constitue pas une déclaration de conformité"));
+    assert.ok(src.includes("n’a pas encore été validé par un conseil juridique"));
   });
-  it("preview/dev can show the flagged draft with the flag on", () => {
-    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_ENABLED: "true", VERCEL_ENV: "preview" }, privacyFacts), true);
-    assert.equal(isPrivacyPageVisible({ PRIVACY_PAGE_ENABLED: "true" }, privacyFacts), true);
+  it("never asserts conformity, CNDP registration or a retention period", () => {
+    for (const bad of [/conforme à la loi/i, /conforme au rgpd/i, /enregistré auprès de la cndp/i, /déclar[ée]+ (à|auprès de) la cndp/i, /\b\d+ (mois|ans)\b/]) {
+      assert.ok(!bad.test(src), String(bad));
+    }
   });
 });
 
