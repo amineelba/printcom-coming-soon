@@ -6,8 +6,18 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+}
+
+/* Perfect Fourth type scale: base 16px, ratio 1.333 (12 / 16 / 21.33 / 28.43 / 37.90 / 50.52 / 67.34px). */
+@theme {
+  --text-pf-sm: 0.75rem;
+  --text-pf-0: 1rem;
+  --text-pf-1: 1.333rem;
+  --text-pf-2: 1.776875rem;
+  --text-pf-3: 2.3685625rem;
+  --text-pf-4: 3.1573125rem;
+  --text-pf-5: 4.20875rem;
 }
 
 body {
@@ -19,9 +29,9 @@ body {
 /* ---------- Blueprint: CSS layers ---------- */
 .blueprint {
   background:
-    radial-gradient(ellipse 60% 55% at 72% 22%, rgb(20 110 255 / 0.55), transparent 70%),
-    radial-gradient(ellipse 50% 60% at 0% 100%, rgb(4 28 110 / 0.55), transparent 70%),
-    linear-gradient(135deg, #0a38ad 0%, #0a46c8 45%, #0a4fd8 70%, #073394 100%);
+    radial-gradient(ellipse 58% 68% at 75% 22%, rgb(27 112 255 / 0.52), transparent 73%),
+    radial-gradient(ellipse 63% 70% at 7% 91%, rgb(0 29 111 / 0.52), transparent 73%),
+    linear-gradient(128deg, #0b3aa8 0%, #0c4bc9 52%, #083aaa 100%);
 }
 
 .blueprint-grid {
@@ -33,16 +43,14 @@ body {
   background-image:
     linear-gradient(rgb(var(--blueprint-line) / 0.07) 1px, transparent 1px),
     linear-gradient(90deg, rgb(var(--blueprint-line) / 0.07) 1px, transparent 1px);
-  background-size: 14px 14px;
-  background-position: center;
+  background-size: 13px 13px;
 }
 
 .blueprint-grid-strong {
   background-image:
-    linear-gradient(rgb(var(--blueprint-line) / 0.13) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(var(--blueprint-line) / 0.13) 1px, transparent 1px);
-  background-size: 112px 112px;
-  background-position: center;
+    linear-gradient(rgb(var(--blueprint-line) / 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--blueprint-line) / 0.1) 1px, transparent 1px);
+  background-size: 110px 110px;
 }
 
 /* ---------- Blueprint: SVG overlay ---------- */
@@ -51,38 +59,37 @@ body {
   inset: 0;
   width: 100%;
   height: 100%;
+  opacity: 0.84;
 }
 
 .blueprint-svg .bp-line {
   fill: none;
-  stroke: rgb(255 255 255 / 0.9);
-  stroke-width: 1.25;
+  stroke: rgb(236 246 255 / 0.39);
+  stroke-width: 1.15;
   vector-effect: non-scaling-stroke;
 }
 
+.blueprint-svg .bp-strong {
+  stroke: rgb(255 255 255 / 0.7);
+}
+
 .blueprint-svg .bp-faint {
-  stroke: rgb(255 255 255 / 0.4);
-  stroke-width: 1;
+  stroke: rgb(225 237 255 / 0.22);
 }
 
 .blueprint-svg .bp-dashed {
-  stroke-dasharray: 6 5;
-}
-
-.blueprint-svg .bp-dot {
-  fill: #fff;
+  stroke-dasharray: 6 7;
 }
 
 .blueprint-svg .bp-text {
-  fill: rgb(255 255 255 / 0.88);
+  fill: rgb(255 255 255 / 0.68);
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-size: 15px;
-  letter-spacing: 0.2em;
+  font-size: 13px;
+  letter-spacing: normal;
 }
 
 .blueprint-svg .bp-text-sm {
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
+  font-size: 11px;
 }
 
 /* ---------- Logo marquee ---------- */

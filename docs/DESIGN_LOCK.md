@@ -1,6 +1,35 @@
-# PRINTCOM COMING SOON — DESIGN LOCK V3
+# PRINTCOM COMING SOON — DESIGN LOCK V3 (PREMIUM)
 
-**Status: validated on 2026-10-12. Supersedes every previous Precision White / Print & Material draft and the old handoff ZIP.**
+**Status: V3 validated 2026-10-12. V3 Premium (centered hero, new copy, catalogue lead popup) approved by the owner 2026-10-13 from `printcom-demo-v3.html` + desktop/mobile screenshots. Supersedes every previous Precision White / Print & Material draft and the old handoff ZIP. Where this file's older sections conflict with the "V3 Premium" section below, V3 Premium wins.**
+
+## V3 Premium (current source of truth)
+
+### Exact copy (preserve text)
+- Brand (header, left only; no header badge, no eyebrow): `printcom.`
+- Badge, above the H1: `Site en construction`
+- H1: `La matière donne envie aux idées.`
+- Subtitle: `Tout ce qui porte votre marque.` / `Imprimé avec intention.`
+- Description: `Notre site est en cours de construction.` / `Mais, votre projet, lui, peut commencer dès maintenant.`
+- Primary CTA: `Demander un devis` → exact href `mailto:contact@printcom.ma` (a genuine mail link; `mailto@printcom.ma` in an earlier brief was a typo and is not a valid link).
+- Secondary CTA: `Télécharger notre catalogue` → opens the lead popup (a `button`, not a link).
+- Footer: `© 2026 Printcom` · `Bientôt en ligne` · `Impressions qui durent`
+
+### Layout and type
+- Centered hero: badge → H1 → subtitle → description → two CTAs → logo marquee (max-width 880px, `min(880px, 85vw)`; `min(100%, 580px)` under 700px) → footer.
+- Type scale: Perfect Fourth, base 16px, ratio 1.333: 12 / 16 / 21.33 / 28.43 / 37.90 / 50.52 / 67.34px (Tailwind tokens `text-pf-sm`, `pf-0` … `pf-5`). Font: Inter. Normal letter-spacing everywhere (no negative tracking).
+- H1: 50.52px on one line from 1240px wide, 67.34px from 1800px, 37.90px below 1240px (natural, balanced wrapping), 28.43px under 370px.
+- Layers: Blueprint → Image Trail → content (header, hero, marquee, footer) → popup (native `<dialog>`, top layer).
+
+### Blueprint
+CSS gradients + two inline SVG scenes (landscape from 1024px up, portrait below), marks spread evenly: crosshairs, registration targets, dashed circles and arcs, CMJN chips, DÉCOUPE / PLIAGE / FAÇONNAGE / IMPRESSION, ruler `300 / 150 / 0 mm`, A4 outline `A4 · 210 × 297 mm`, `FORMAT · PRINT` outline. Decorative drafting annotations only. Never a bitmap background.
+
+### Lead popup
+Trigger `Télécharger notre catalogue`. Title `Recevez notre catalogue`. Fields: Nom complet*, Email professionnel*, Téléphone, Entreprise, Votre projet*, required consent. Submit label (exact): `Obtenir mon catalogue`. Success and error states are honest: no catalogue file exists, so none is ever offered. See `docs/BACKEND_SETUP.md`.
+
+---
+
+## V3 base (kept for history; copy and layout below are superseded where noted)
+
 
 ## Canonical visual reference
 
@@ -11,7 +40,7 @@
 ## Locked stack
 Next.js App Router + React + TypeScript (strict) + Tailwind CSS + npm, deployed to Vercel ONLY after owner approval. Prefer latest compatible stable versions when starting the implementation. No Webflow, no Canvas/WebGL needed for the blueprint.
 
-## Exact approved copy — preserve text
+## Exact approved copy — SUPERSEDED by V3 Premium above
 - Header brand: `printcom.`
 - Header badge: `Site en préparation`
 - Eyebrow: `L’ART DE L’IMPRESSION COMMERCIALE`
@@ -44,7 +73,7 @@ The trail must not block CTA clicks or obscure the H1. When pointer/touch/reduce
 Insert an infinite animated logo marquee BELOW the CTA, but above footer. Purpose: show Printcom has an active business. Only render real, **approved/authorized existing customer/partner logos** supplied later by the owner in `public/media/marquee/` as sanitized SVG files and registered in `src/config/site-assets.ts`; mock/fake client endorsements are forbidden. Until real logos arrive, build a component accepting `logos[]` and render nothing or a clear developer-only placeholder; DO NOT publish invented third-party logos, random icons, or fictional brand names as customer logos.
 Marquee must pause on hover/focus, support `prefers-reduced-motion` with static wrapped logo grid, and give appropriate accessible labels.
 
-## Layout
+## Layout — SUPERSEDED by V3 Premium above
 
 At 1440px wide: header; centered vertically hero with left copy column ~55% and right/center interactive Image Trail zone ~45%; CTA clear; marquee below; short thin-line footer. On small laptop ensure content fits or scrolls naturally. At 390px: CTA and hero copy first, reduce drafting annotation count, Image Trail falls back to static or touch-safe; logo rail reduces without content loss. No horizontal scroll.
 

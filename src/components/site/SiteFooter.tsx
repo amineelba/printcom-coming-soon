@@ -1,11 +1,9 @@
 export function SiteFooter() {
   return (
-    <footer className="border-t border-white/20 bg-[#0a2f8f]/55 backdrop-blur-sm px-6 py-6 text-sm text-white/85 sm:px-10 md:px-16">
-      <div className="flex flex-col items-center justify-between gap-2 text-center sm:flex-row sm:text-left">
-        <p>© 2026 Printcom</p>
-        <p>Bientôt en ligne</p>
-        <p>Impressions qui durent</p>
-      </div>
+    <footer className="relative z-[12] flex flex-wrap items-center justify-between gap-3.5 border-t border-white/25 bg-[#052378]/30 px-[clamp(22px,4vw,66px)] py-[17px] text-pf-sm text-white/80 max-[700px]:justify-center max-[700px]:px-2.5 max-[700px]:py-4 max-[700px]:text-center">
+      <p>© 2026 Printcom</p>
+      <p>Bientôt en ligne</p>
+      <p>Impressions qui durent</p>
     </footer>
   );
 }

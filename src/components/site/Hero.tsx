@@ -1,53 +1,48 @@
+import { CatalogueLead } from "@/components/lead/CatalogueLead";
+import { ACTION_PRIMARY } from "./actions";
+
 const QUOTE_HREF = "mailto:contact@printcom.ma";
 
 export function Hero() {
   return (
     <section
       aria-labelledby="hero-title"
-      className="flex flex-1 items-center px-6 py-12 sm:px-10 md:px-16 md:py-10"
+      className="relative isolate flex w-full max-w-[1500px] flex-col items-center text-center [text-shadow:0_2px_25px_rgb(5_30_115/0.35)]"
     >
-      <div className="grid w-full items-center gap-10 lg:grid-cols-[11fr_9fr]">
-        <div className="max-w-[46rem] [text-shadow:0_1px_20px_rgb(5_30_120/0.5)]">
-          <p className="mb-5 text-[0.7rem] font-normal tracking-[0.28em] text-white/80 sm:text-xs">
-            L’ART DE L’IMPRESSION COMMERCIALE
-          </p>
-          <h1
-            id="hero-title"
-            className="text-[clamp(2.75rem,7vw,6.25rem)] lg:text-[clamp(2.75rem,6.2vw,6.25rem)] font-medium leading-[0.98] tracking-[-0.035em] text-balance text-white lg:text-wrap"
-          >
-            La matière donne vie aux idées.
-          </h1>
-          <p className="mt-8 max-w-md text-[clamp(1.2rem,1.7vw,1.6rem)] font-normal leading-snug text-white">
-            <span className="block">Tout ce qui porte votre marque.</span>{" "}
-            <span className="block">Imprimé avec intention.</span>
-          </p>
-          <p className="mt-5 max-w-lg text-base leading-relaxed text-white/85 sm:text-[1.05rem]">
-            <span className="block">Notre site est en préparation.</span>{" "}
-            <span className="block">Votre projet, lui, peut commencer dès maintenant.</span>
-          </p>
-          <a
-            href={QUOTE_HREF}
-            className="mt-9 inline-flex min-h-14 items-center gap-4 rounded-full bg-white px-8 text-lg font-medium text-[#0a1a40] shadow-[0_10px_40px_-10px_rgb(0_20_90/0.6)] transition-transform hover:-translate-y-0.5 focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-white"
-          >
-            Demander un devis
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 16 16"
-              className="size-4"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M4 12L12 4M5.5 4H12v6.5" />
-            </svg>
-          </a>
-        </div>
+      {/* soft dark halo behind the copy for contrast over the blueprint / trail */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -inset-x-5 -top-[70px] -bottom-[55px] -z-10 bg-[radial-gradient(ellipse_55%_73%_at_50%_43%,rgb(4_37_125/0.65)_0%,rgb(4_37_125/0.25)_54%,transparent_85%)]"
+      />
 
-        {/* Keeps the copy in the left column. The image trail is a fullscreen
-            overlay (see TrailOverlay), so nothing lives here. */}
-        <div aria-hidden="true" className="hidden min-h-[26rem] lg:block" />
+      <p className="mb-[29px] inline-flex items-center gap-[9px] rounded-full border border-white/40 bg-[#092e8e]/80 px-[17px] py-[9px] text-pf-sm font-medium text-white shadow-[0_6px_28px_rgb(9_36_103/0.25)] max-[700px]:mb-6">
+        <span aria-hidden="true" className="size-[7px] shrink-0 rounded-full bg-[#53b8ff] shadow-[0_0_9px_#60b9ff]" />
+        Site en construction
+      </p>
+
+      <h1
+        id="hero-title"
+        className="mx-auto max-w-[920px] text-pf-3 font-[540] leading-[1.12] text-balance text-white min-[1240px]:max-w-full min-[1240px]:text-pf-4 min-[1240px]:whitespace-nowrap min-[1800px]:text-pf-5 max-[370px]:text-pf-2"
+      >
+        La matière donne envie aux idées.
+      </h1>
+
+      <p className="mt-6 text-pf-1 font-[430] leading-[1.45] max-[700px]:mt-[22px]">
+        <span className="block">Tout ce qui porte votre marque.</span>
+        <span className="block">Imprimé avec intention.</span>
+      </p>
+
+      <p className="mt-[18px] max-w-[710px] text-pf-0 leading-[1.65] text-white/85">
+        <span className="block">Notre site est en cours de construction.</span>
+        <span className="block">Mais, votre projet, lui, peut commencer dès maintenant.</span>
+      </p>
+
+      <div className="mt-[30px] flex flex-wrap justify-center gap-3 max-[700px]:mt-[25px] max-[700px]:w-[min(100%,330px)] max-[700px]:flex-col max-[700px]:items-stretch">
+        <a href={QUOTE_HREF} className={ACTION_PRIMARY}>
+          Demander un devis
+          <span aria-hidden="true">↗</span>
+        </a>
+        <CatalogueLead />
       </div>
     </section>
   );

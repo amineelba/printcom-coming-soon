@@ -4,7 +4,7 @@ import type { MarqueeLogo } from "@/config/site-assets";
 // Each loop half is repeated until it is wider than any realistic viewport,
 // so the -50% translate loops seamlessly even with few logos.
 const MIN_LOGOS_PER_HALF = 16;
-const SECONDS_PER_LOGO = 5; // slow, constant speed whatever the logo count
+const SECONDS_PER_LOGO = 4; // slow, constant speed whatever the logo count
 
 function LogoItem({ logo, hidden }: { logo: MarqueeLogo; hidden: boolean }) {
   return (
@@ -12,8 +12,8 @@ function LogoItem({ logo, hidden }: { logo: MarqueeLogo; hidden: boolean }) {
       aria-hidden={hidden || undefined}
       className={
         hidden
-          ? "marquee-dup relative h-10 w-32 shrink-0 sm:h-12 sm:w-40"
-          : "relative h-10 w-32 shrink-0 sm:h-12 sm:w-40"
+          ? "marquee-dup relative h-10 w-[105px] shrink-0 min-[701px]:h-[43px] min-[701px]:w-[120px]"
+          : "relative h-10 w-[105px] shrink-0 min-[701px]:h-[43px] min-[701px]:w-[120px]"
       }
     >
       <Image
@@ -23,7 +23,7 @@ function LogoItem({ logo, hidden }: { logo: MarqueeLogo; hidden: boolean }) {
         unoptimized
         loading="eager"
         draggable={false}
-        sizes="160px"
+        sizes="120px"
         className="object-contain"
       />
     </li>
@@ -56,7 +56,7 @@ export function LogoMarquee({ logos }: { logos: MarqueeLogo[] }) {
     <section
       aria-label="Logos clients et partenaires"
       tabIndex={0}
-      className="marquee mx-6 rounded-2xl border border-white/50 bg-white/92 py-4 shadow-[0_18px_50px_-24px_rgb(0_15_80/0.6)] backdrop-blur-md focus-visible:outline-3 focus-visible:outline-offset-4 focus-visible:outline-white sm:mx-10 md:mx-16"
+      className="marquee mx-auto w-[min(880px,85vw)] max-w-full rounded-[13px] border border-white/60 bg-white/93 py-3.5 shadow-[0_12px_40px_rgb(0_22_92/0.27)] backdrop-blur-[9px] focus-visible:outline-[3px] focus-visible:outline-offset-4 focus-visible:outline-white max-[700px]:w-[min(100%,580px)]"
     >
       <div className="marquee-viewport overflow-hidden">
         <div
@@ -67,12 +67,12 @@ export function LogoMarquee({ logos }: { logos: MarqueeLogo[] }) {
             } as React.CSSProperties
           }
         >
-          <ul className="marquee-half flex shrink-0 items-center gap-12 pr-12 sm:gap-16 sm:pr-16">
+          <ul className="marquee-half flex shrink-0 items-center gap-6 pr-6 min-[701px]:gap-12 min-[701px]:pr-12">
             {half("a", true)}
           </ul>
           <ul
             aria-hidden="true"
-            className="marquee-half marquee-dup flex shrink-0 items-center gap-12 pr-12 sm:gap-16 sm:pr-16"
+            className="marquee-half marquee-dup flex shrink-0 items-center gap-6 pr-6 min-[701px]:gap-12 min-[701px]:pr-12"
           >
             {half("b", false)}
           </ul>
