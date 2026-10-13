@@ -1,3 +1,6 @@
+import { trailImages } from "@/config/site-assets";
+import { TrailZone } from "@/components/trail/TrailZone";
+
 const QUOTE_HREF = "mailto:contact@printcom.ma";
 
 export function Hero() {
@@ -45,12 +48,13 @@ export function Hero() {
           </a>
         </div>
 
-        {/* Reserved for the Sprint 3 Image Trail. Intentionally empty. */}
-        <div
-          id="image-trail-zone"
-          aria-hidden="true"
-          className="hidden min-h-[26rem] lg:block"
-        />
+        {/* Sprint 3: owner-supplied images only. Empty list keeps the
+            column reserved on desktop and renders nothing. */}
+        {trailImages.length > 0 ? (
+          <TrailZone images={trailImages} />
+        ) : (
+          <div aria-hidden="true" className="hidden min-h-[26rem] lg:block" />
+        )}
       </div>
     </section>
   );
