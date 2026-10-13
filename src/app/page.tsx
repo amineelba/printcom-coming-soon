@@ -1,10 +1,19 @@
 import { BlueprintBackground } from "@/components/blueprint/BlueprintBackground";
+import { Hero } from "@/components/site/Hero";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { SiteHeader } from "@/components/site/SiteHeader";
 
-// Sprint 1 placeholder: background only. Hero, CTA and footer arrive in Sprint 2.
 export default function Home() {
   return (
-    <main className="relative min-h-dvh overflow-hidden">
+    <div className="relative flex min-h-dvh flex-col overflow-x-clip">
       <BlueprintBackground />
-    </main>
+      <div className="relative z-10 flex min-h-dvh flex-col">
+        <SiteHeader />
+        <main className="flex flex-1 flex-col">
+          <Hero />
+        </main>
+        <SiteFooter />
+      </div>
+    </div>
   );
 }
