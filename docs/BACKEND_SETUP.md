@@ -53,7 +53,7 @@ Add them to **Preview** first; Production only after approval. Never use `NEXT_P
    - Vercel: Project `printcom-coming-soon` → Settings → Environment Variables, **Preview** first. Never prefix it with `NEXT_PUBLIC_`.
 4. Add the `LEAD_*` variables (see above), redeploy the Preview, submit a test lead, check the email arrives at `LEAD_NOTIFY_TO` with the right Reply-To. Delete the test row afterwards.
 
-Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `email`, `phone`, `company`, `project`, `consent_at`, `consent_version` (`catalogue-2026-10-v1`), `source` (`coming-soon-catalogue`), `status` (`new`/`contacted`/`qualified`/`discarded`), `created_at`.
+Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `email`, `phone`, `company`, `project`, `consent_at`, `consent_version` (`catalogue-2026-10-v2`; rows saved before 2026-10-20 keep `…-v1`, which is intentional: it records the wording the person actually accepted), `source` (`coming-soon-catalogue`), `status` (`new`/`contacted`/`qualified`/`discarded`), `created_at`.
 
 ## Verification already done
 - Migration + `insertLead` run against a real Postgres engine (PGlite, in a scratch folder, outside the repo): first insert, same-key retry, same-email duplicate, SQL-injection string stored as plain data, CHECK constraints, migration run twice.
@@ -61,7 +61,7 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 - **Not verified:** a live Neon connection (no database exists yet).
 
 ## Privacy and consent
-- Consent is required, timestamped (`consent_at`) and versioned. **If the consent wording in `CatalogueLead.tsx` changes, bump `CONSENT_VERSION` in `src/lib/leads/schema.ts`.**
+- Consent is required for the request only (not marketing: no marketing consent is collected or inferred), timestamped (`consent_at`) and versioned. **If the consent wording in `CatalogueLead.tsx` changes, bump `CONSENT_VERSION` in `src/lib/leads/schema.ts`.**
 - Collected: name, professional email, optional phone and company, project text. Used only to handle the request.
 - No cookies, analytics or third-party scripts were added.
 
@@ -73,3 +73,9 @@ Table `catalogue_leads`: `id` uuid, `submission_key` uuid unique, `full_name`, `
 5. **Rate limiting**: the in-memory limiter is best effort only. Add a Vercel Firewall (WAF) rate-limit rule on `/api/catalogue-leads` before launch. Consider a CAPTCHA only if spam appears.
 6. **The catalogue PDF does not exist.** The UI says so and offers no download. When it exists, decide the delivery mode (email after confirmation is safer than a public link) as a separate, approved task.
 7. `contact@printcom.ma` must be a working mailbox (shown in the error message and used by the quote CTA).
+
+## Privacy page `/politique-de-confidentialite`
+- Content: `src/app/politique-de-confidentialite/page.tsx`. Owner-only facts live in `src/config/privacy.ts` (all `null` = flagged "À confirmer par Printcom" on the page). Nothing legal was invented.
+- **Hidden by default** (404) and the form shows no link. Env flag `PRIVACY_PAGE_ENABLED=true` (server-only, read at build time: redeploy after changing it) shows it. In **production** it stays hidden until every entry of `src/config/privacy.ts` is filled, even with the flag on. Preview/dev with the flag on show the flagged draft.
+- Page is `noindex` until the owner validates the text; change `robots` in the page then.
+- To publish: fill `src/config/privacy.ts` with confirmed facts, get the text reviewed, set `PRIVACY_PAGE_ENABLED=true` on Production, redeploy.

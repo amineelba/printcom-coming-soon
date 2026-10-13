@@ -1,7 +1,10 @@
 // Shared by the lead form (client) and POST /api/catalogue-leads (server).
 // The server never trusts the client: it always re-runs validateLead.
 
-export const CONSENT_VERSION = "catalogue-2026-10-v1";
+// Bump whenever the consent wording or its help text in CatalogueLead.tsx changes.
+// v1: "J'accepte d'être recontacté(e) par Printcom au sujet de cette demande."
+// v2: processing consent for the catalogue request only; explicit "no marketing" statement.
+export const CONSENT_VERSION = "catalogue-2026-10-v2";
 export const LEAD_SOURCE = "coming-soon-catalogue";
 
 export const LIMITS = {

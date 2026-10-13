@@ -11,7 +11,7 @@
 - Subtitle: `Tout ce qui porte votre marque.` / `Imprimé avec intention.`
 - Description: `Notre site est en cours de construction.` / `Mais, votre projet, lui, peut commencer dès maintenant.`
 - Primary CTA: `Demander un devis` → exact href `mailto:contact@printcom.ma` (a genuine mail link; `mailto@printcom.ma` in an earlier brief was a typo and is not a valid link).
-- Secondary CTA: `Télécharger notre catalogue` → opens the lead popup (a `button`, not a link).
+- Secondary CTA: `Demander notre catalogue` → opens the lead popup (a `button`, not a link). (Was "Télécharger notre catalogue": changed 2026-10-20, no file is downloadable.)
 - Footer: `© 2026 Printcom` · `Bientôt en ligne` · `Impressions qui durent`
 
 ### Layout and type
@@ -24,7 +24,7 @@
 CSS gradients + two inline SVG scenes (landscape from 1024px up, portrait below), marks spread evenly: crosshairs, registration targets, dashed circles and arcs, CMJN chips, DÉCOUPE / PLIAGE / FAÇONNAGE / IMPRESSION, ruler `300 / 150 / 0 mm`, A4 outline `A4 · 210 × 297 mm`, `FORMAT · PRINT` outline. Decorative drafting annotations only. Never a bitmap background.
 
 ### Lead popup
-Trigger `Télécharger notre catalogue`. Title `Recevez notre catalogue`. Fields: Nom complet*, Email professionnel*, Téléphone, Entreprise, Votre projet*, required consent. Submit label (exact): `Obtenir mon catalogue`. Success and error states are honest: no catalogue file exists, so none is ever offered. See `docs/BACKEND_SETUP.md`.
+Trigger `Demander notre catalogue`. Title `Demandez notre catalogue`. Fields: Nom complet*, Email professionnel*, Téléphone, Entreprise, Votre projet*, required consent for the request only (no marketing consent, explicit statement that none is given). Submit label (exact): `Envoyer ma demande`. Success: `Votre demande a bien été enregistrée. Notre équipe reviendra vers vous par email pour vous transmettre le catalogue.` The catalogue is sent manually by the team: no download, no automation. See `docs/BACKEND_SETUP.md`.
 
 ---
 
